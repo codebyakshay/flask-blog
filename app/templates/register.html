@@ -1,0 +1,94 @@
+{% extends 'layout.html'%}
+{%block content%}
+
+
+	<div class="content-section">
+		<form method="POST" action="">
+			{{ reg_form.hidden_tag() }}
+
+			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">Sign Up</legend>
+				<div class="form-group">
+
+					<!-- Username -->
+					{{ reg_form.username.label(class="form-control-label")}} <!-- Name of the field -->
+
+					{% if reg_form.username.errors %}<!-- Validating Field  -->
+						{{ reg_form.username(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in reg_form.username.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ reg_form.username(class="form-control form-control-lg")}} <!-- Default Field Space -->
+					{% endif %}
+
+				</div>
+				<div class="form-group" name='email'>
+					<!-- Email -->
+					
+					{{ reg_form.email.label(class="form-control-label")}} <!-- Name of the field -->
+
+					{% if reg_form.email.errors %}<!-- Validating  Field -->
+						{{ reg_form.email(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in reg_form.email.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ reg_form.email(class="form-control form-control-lg")}} <!-- Actual Field Space -->
+					{% endif %}
+
+
+				</div>
+				<div class="form-group">
+					<!-- Password -->
+					
+					{{ reg_form.user_password.label(class="form-control-label")}} <!-- Name of the field -->
+			
+					{% if reg_form.user_password.errors %}<!-- Validating Field  -->
+						{{ reg_form.user_password(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in reg_form.user_password.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ reg_form.user_password(class="form-control form-control-lg")}} <!-- Actual Field Space -->
+					{% endif %}
+
+				</div>
+				<div class="form-group">
+					<!-- Confirm Password -->
+					
+					{{ reg_form.confirm_password.label(class="form-control-label")}} <!-- Name of the field -->
+					{% if reg_form.confirm_password.errors %}<!-- Validating Actual Field Space -->
+						{{ reg_form.confirm_password(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in reg_form.confirm_password.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ reg_form.confirm_password(class="form-control form-control-lg")}} <!-- Actual Field Space -->
+					{% endif %}
+
+
+				</div>
+			</fieldset>
+			<div class="form-group">
+				{{ reg_form.submit(class="btn btn-outline-info") }}
+			</div>
+		</form>
+	</div>
+
+	<div class="border-top pt-3">
+		<small class="text-muted">
+			Alredy Have An Account?<a href="{{ url_for('login')}}"> Login</a> 
+		</small>
+	</div>
+
+
+{% endblock content%}

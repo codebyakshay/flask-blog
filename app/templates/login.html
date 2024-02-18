@@ -1,0 +1,63 @@
+{% extends 'layout.html'%}
+{%block content%}
+
+
+	<div class="content-section">
+		<form method="POST" action="">
+			{{ login_form.hidden_tag() }}
+			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">Login</legend>
+				<div class="form-group" name='email'>
+					<!-- Email -->
+					
+					{{ login_form.email.label(class="form-control-label")}} <!-- Name of the field -->
+
+					{% if login_form.email.errors %}<!-- Validating  Field -->
+						{{ login_form.email(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in login_form.email.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ login_form.email(class="form-control form-control-lg")}} <!-- Actual Field Space -->
+					{% endif %}
+				</div>
+				<div class="form-group">
+					<!-- Password -->
+					
+					{{ login_form.user_password.label(class="form-control-label")}} <!-- Name of the field -->
+					{% if login_form.user_password.errors %}<!-- Validating Field  -->
+						{{ login_form.user_password(class="form-control form-control-lg is-invalid")}} <!-- Actual Field Space -->
+						<div class="invalid-feedback">
+							{% for error in login_form.user_password.errors %}
+								<span>{{ error }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						{{ login_form.user_password(class="form-control form-control-lg")}} <!-- Actual Field Space -->
+					{% endif %}
+
+				</div>
+				<div class="form-check">
+					{{ login_form.remember(class="form-check-input") }}
+					{{ login_form.remember.label(class="form-check-label") }}
+				</div>
+			</fieldset>
+			<div class="form-group">
+				{{ login_form.submit(class="btn btn-outline-info") }}
+			</div>
+			<small class="text-muted ml-2">
+				<a href="#">Forget Password??</a>
+			</small>
+		</form>
+	</div>
+
+	<div class="border-top pt-3">
+		<small class="text-muted">
+			Create A Account<a href="{{ url_for('register')}}"> Signup!</a> 
+		</small>
+	</div>
+
+
+{% endblock content%}

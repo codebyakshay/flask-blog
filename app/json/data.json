@@ -1,0 +1,44 @@
+[
+    {
+        "display_name":"Machine Learning",
+        "author": "John Doe",
+        "title": "My Journey into Machine Learning",
+        "content": "Today I started learning about machine learning...",
+        "date_posted": "January 15, 2023"
+    },
+    {
+        "display_name":"Better Productivity",
+        "author": "Jane Smith",
+        "title": "10 Tips for Better Productivity",
+        "content": "Here are some tips that have helped me stay productive...",
+        "date_posted": "February 5, 2023"
+    },
+    {   
+        "display_name":"Explor the Wilderness",
+        "author": "David Lee",
+        "title": "Exploring the Wilderness",
+        "content": "Ventured into the wilderness today and discovered...",
+        "date_posted": "March 20, 2023"
+    },
+    {   
+        "display_name":"Cooking",
+        "author": "Sarah Johnson",
+        "title": "The Art of Cooking",
+        "content": "I've been experimenting with new recipes lately and...",
+        "date_posted": "April 10, 2023"
+    },
+    {   
+        "display_name":"From Couch Potato to Marathon Runner",
+        "author": "Michael Brown",
+        "title": "Fitness Journey: From Couch Potato to Marathon Runner",
+        "content": "After years of sedentary lifestyle, I decided to take control of my health...",
+        "date_posted": "May 5, 2023"
+    },
+    {
+        "display_name":"Exploring Europe",
+        "author": "Daniel Kim",
+        "title": "Travel Diaries: Exploring Europe",
+        "content": "Embarked on a solo journey across Europe, visiting iconic landmarks...",
+        "date_posted": "July 15, 2023"
+    }
+]
