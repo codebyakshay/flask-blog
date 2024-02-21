@@ -71,8 +71,10 @@ a.article-title:hover {
 .account-img {
   height: 125px;
   width: 125px;
-  margin-right: 20px;
+  margin-right: 25px;
   margin-bottom: 16px;
+  object-fit: cover; /* This property preserves the aspect ratio while covering the container */
+  border-radius: 50%; /* This property creates a circular shape */
 }
 
 .account-heading {
