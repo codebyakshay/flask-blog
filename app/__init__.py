@@ -16,6 +16,6 @@ db = SQLAlchemy(app)
 app.app_context().push()
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'login'  # type: ignore
 login_manager.login_message_category = 'info'
 from app import routes

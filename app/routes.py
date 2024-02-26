@@ -3,41 +3,36 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from app import app, bcrypt, db
-from app.form import RegistrationForm,LoginForm, UpdateAccountForm
+from app.form import RegistrationForm,LoginForm, UpdateAccountForm, PostForm
 from app.models import User, Posts
-from json import load
 from flask_login import login_user, current_user, logout_user, login_required
-
-
 app.static_folder = 'static'
 
-def load_posts():
-    json_file_path = 'app/json/data.json'
-    with open(json_file_path, 'r') as file:
-        return load(file)
-posts = load_posts()
+
 
 
 @app.route("/home")
 @app.route("/")
 def home():
-    return render_template('home.html', posts=posts)
+    posts = Posts.query.all()
+    return render_template('home.html', posts=posts) # type: ignore
 
 @app.route("/about")
 def about():
     return render_template('about.html', title = 'About')
 
-@app.route("/register",methods=['GET','POST'])
+@app.route("/register", methods=['GET','POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     
     reg_form_instance = RegistrationForm()
     if reg_form_instance.validate_on_submit():
+        
         hashed_pwd = bcrypt.generate_password_hash(reg_form_instance.user_password.data).decode('utf-8')
         username = reg_form_instance.username.data
         email = reg_form_instance.email.data
-        user = User(username = username,email = email,password = hashed_pwd)
+        user = User(username = username, email = email, password = hashed_pwd) # type: ignore
         db.session.add(user)
         db.session.commit()
         flash(f'Your account has been created! You are now able to login','success')
@@ -76,7 +71,7 @@ def logout():
 
 
 def save_picture(form_picture):
-    #renaming files
+    #change the file name to be unique
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -121,3 +116,20 @@ def account():
         db.session.rollback()  # Rollback changes in case of an exception
         flash(f'An error occurred: {str(e)}', 'danger')
         return redirect(url_for('account'))
+    
+@app.route("/post/new", methods=['GET', 'POST'])
+@login_required
+def create_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        try:
+            post = Posts(title=form.title.data, content=form.content.data, user_id=current_user.id) # type: ignore
+            db.session.add(post)
+            db.session.commit()
+            flash('Your post has been created', 'success')
+            return redirect(url_for('home'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating post: {e}', 'danger')
+            # Optionally, log the error here
+    return render_template('create_post.html', title='New Post', form=form)
