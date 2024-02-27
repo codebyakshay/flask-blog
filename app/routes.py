@@ -1,15 +1,12 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from app import app, bcrypt, db
 from app.form import RegistrationForm,LoginForm, UpdateAccountForm, PostForm
 from app.models import User, Posts
 from flask_login import login_user, current_user, logout_user, login_required
 app.static_folder = 'static'
-
-
-
 
 @app.route("/home")
 @app.route("/")
@@ -68,8 +65,6 @@ def logout():
     return redirect(url_for('home'))
 
 
-
-
 def save_picture(form_picture):
     #change the file name to be unique
     random_hex = secrets.token_hex(8)
@@ -84,7 +79,6 @@ def save_picture(form_picture):
     i.save(picture_path)    
 
     return picture_fn
-
 
 
 @app.route("/account", methods=['GET','POST'])
@@ -132,4 +126,45 @@ def create_post():
             db.session.rollback()
             flash(f'Error creating post: {e}', 'danger')
             # Optionally, log the error here
-    return render_template('create_post.html', title='New Post', form=form)
+    return render_template('create_post.html', title='New Post', 
+                           form=form, legend='New Post')
+    
+    
+@app.route("/post/<int:post_id>")# type: ignore
+def post(post_id):# type: ignore
+    post = Posts.query.get_or_404(post_id)# type: ignore
+    return render_template('post.html', title=post.title, post=post)
+
+
+@app.route("/post/<int:post_id>/update", methods=['GET','POST'])# type: ignore
+@login_required
+def update_post(post_id):# type: ignore
+    post = Posts.query.get_or_404(post_id)# type: ignore
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your Post Has been Updated', 'success')
+        return redirect(url_for('post', post_id=post.id ))
+    
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+        
+    return render_template('create_post.html', title='Update Post', 
+                           form=form, legend='Update Post')
+    
+@app.route("/post/<int:post_id>/delete", methods=['POST'])# type: ignore
+@login_required
+def delete_post(post_id):# type: ignore
+    post = Posts.query.get_or_404(post_id)# type: ignore
+    if post.author != current_user:
+        abort(403) 
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your Post Has Been Deleted!', 'success')
+    return redirect(url_for('home'))
+    
