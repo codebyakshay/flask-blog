@@ -6,12 +6,14 @@ from app import app, bcrypt, db
 from app.form import RegistrationForm,LoginForm, UpdateAccountForm, PostForm
 from app.models import User, Posts
 from flask_login import login_user, current_user, logout_user, login_required
+
 app.static_folder = 'static'
 
 @app.route("/home")
 @app.route("/")
 def home():
-    posts = Posts.query.all()
+    page = request.args.get('page', 1, type = int)
+    posts = Posts.query.order_by(Posts.date_posted.desc()).paginate(page = page, per_page=5)
     return render_template('home.html', posts=posts) # type: ignore
 
 @app.route("/about")
@@ -168,3 +170,11 @@ def delete_post(post_id):# type: ignore
     flash('Your Post Has Been Deleted!', 'success')
     return redirect(url_for('home'))
     
+@app.route("/user/<string:username>")  # Corrected the route parameter; removed 'str:'
+def user_post(username):
+    page = request.args.get('page', 1, type=int)  # Ensure 'page' is an integer
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Posts.query.filter_by(author=user)\
+        .order_by(Posts.date_posted.desc())\
+        .paginate(page=page, per_page=5)  # Adjusted per_page to 5 as in the first function
+    return render_template('user_post.html', posts=posts, user=user)  # Adjusted to use 'user_posts.html'
