@@ -2,10 +2,12 @@ import os
 import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
-from app import app, bcrypt, db
-from app.form import RegistrationForm,LoginForm, UpdateAccountForm, PostForm
+from app import app, bcrypt, db, mail
+from app.form import (RegistrationForm, LoginForm, UpdateAccountForm, 
+                      PostForm, RequestResetForm, ResetPasswordForm)
 from app.models import User, Posts
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_mail import Message
 
 app.static_folder = 'static'
 
@@ -39,7 +41,7 @@ def register():
     return render_template('register.html',title='Register',reg_form=reg_form_instance)
 
 
-@app.route("/login", methods=['GET','POST'])
+@app.route("/login", methods=['GET','POST']) #login-Route
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -60,12 +62,10 @@ def login():
 
     return render_template('login.html',title='Login',login_form=login_form_instance)
 
-
 @app.route("/logout")
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
 
 def save_picture(form_picture):
     #change the file name to be unique
@@ -81,7 +81,6 @@ def save_picture(form_picture):
     i.save(picture_path)    
 
     return picture_fn
-
 
 @app.route("/account", methods=['GET','POST'])
 @login_required
@@ -130,13 +129,11 @@ def create_post():
             # Optionally, log the error here
     return render_template('create_post.html', title='New Post', 
                            form=form, legend='New Post')
-    
-    
+        
 @app.route("/post/<int:post_id>")# type: ignore
 def post(post_id):# type: ignore
     post = Posts.query.get_or_404(post_id)# type: ignore
     return render_template('post.html', title=post.title, post=post)
-
 
 @app.route("/post/<int:post_id>/update", methods=['GET','POST'])# type: ignore
 @login_required
@@ -159,7 +156,7 @@ def update_post(post_id):# type: ignore
     return render_template('create_post.html', title='Update Post', 
                            form=form, legend='Update Post')
     
-@app.route("/post/<int:post_id>/delete", methods=['POST'])# type: ignore
+@app.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
 def delete_post(post_id):# type: ignore
     post = Posts.query.get_or_404(post_id)# type: ignore
@@ -169,12 +166,66 @@ def delete_post(post_id):# type: ignore
     db.session.commit()
     flash('Your Post Has Been Deleted!', 'success')
     return redirect(url_for('home'))
-    
-@app.route("/user/<string:username>")  # Corrected the route parameter; removed 'str:'
+
+@app.route("/user/<string:username>")  
 def user_post(username):
-    page = request.args.get('page', 1, type=int)  # Ensure 'page' is an integer
+    page = request.args.get('page', 1, type=int)  
     user = User.query.filter_by(username=username).first_or_404()
     posts = Posts.query.filter_by(author=user)\
         .order_by(Posts.date_posted.desc())\
         .paginate(page=page, per_page=5)  # Adjusted per_page to 5 as in the first function
     return render_template('user_post.html', posts=posts, user=user)  # Adjusted to use 'user_posts.html'
+
+
+
+
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request', 
+                  sender='noreply@codebyakshay.com',
+                  recipients=[user.email])
+    # Set email priority (1 = high, 3 = normal, 5 = low)
+    msg.extra_headers = {'X-Priority': '1'}
+    
+    msg.body =  f'''To reset your password, visit the following link:
+{url_for('reset_token', token=token, _external=True)}
+If you did not make this request, simply ignore this email and no changes will be made.'''
+    mail.send(msg)
+
+@app.route("/reset_password", methods=['GET', 'POST'])# type: ignore
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))    
+    form = RequestResetForm()
+    if form.validate_on_submit():   
+        user = User.query.filter_by(email = form.email.data).first()
+        send_reset_email(user)
+        flash('A reset link has been sent to your email.','info')
+        return redirect(url_for('login'))
+    return render_template('reset_request.html', legend='Reset Password', 
+                           title='Reset Password', form=form)  # Adjusted to use 'user_posts.html'
+  
+  
+    
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))   
+    user = User.verify_reset_token(token)
+    
+    if user is None:
+        flash('That is an invalid token try sending in reset link again', 'warning')
+        return redirect(url_for('reset_request'))
+        
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_pwd = bcrypt.generate_password_hash(form.user_password.data).decode('utf-8')
+        user.password = hashed_pwd
+        db.session.commit()
+        flash(f'Your Password has been Updated ','success')
+        return redirect(url_for('login'))    
+    
+    return render_template('reset_token.html', legend='Reset Password', 
+                           title='Reset Password', form=form)
